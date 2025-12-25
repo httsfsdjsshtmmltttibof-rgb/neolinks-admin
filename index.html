@@ -224,6 +224,101 @@ addBtn.onclick=()=>{
   createProject(count);
 };
 </script>
+<script>
+const max = 40;
+const wrap = document.getElementById("projects");
+const addBtn = document.getElementById("addBtn");
+
+let data = JSON.parse(localStorage.getItem("neolink_projects")) || [];
+if (data.length === 0) {
+  for (let i = 1; i <= 7; i++) data.push({});
+}
+
+function save() {
+  localStorage.setItem("neolink_projects", JSON.stringify(data));
+}
+
+function row(label, value = "", index, key, readonly = false, copy = false) {
+  return `
+  <div class="row">
+    <label>${label}:</label>
+    <input 
+      ${readonly ? "readonly" : ""}
+      value="${value}"
+      oninput="update(${index}, '${key}', this.value)"
+    >
+    ${copy ? '<button class="copy" onclick="copyText(this)">📋</button>' : ""}
+  </div>`;
+}
+
+function createProject(index) {
+  const p = data[index] || {};
+  const div = document.createElement("div");
+  div.className = "project";
+
+  div.innerHTML = `
+    <div class="project-header">
+      <span>Project ${index + 1}</span>
+      <span class="arrow">▼</span>
+    </div>
+
+    <div class="details">
+      ${row("Name", p.name || "", index, "name")}
+      ${row("Nomer", index + 1, index, "nomer", true)}
+      ${row("Narxi", p.price || "", index, "price")}
+      ${row("Sana", p.date || "", index, "date")}
+      ${row("Silka", p.link || "", index, "link", false, true)}
+      ${row("Github", p.github || "", index, "github", false, true)}
+
+      <div class="qr">
+        <img src="${p.link ? 
+          "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(p.link) 
+          : ""}">
+      </div>
+    </div>
+  `;
+
+  div.querySelector(".project-header").onclick = () => {
+    div.classList.toggle("open");
+  };
+
+  wrap.appendChild(div);
+}
+
+function update(index, key, value) {
+  data[index][key] = value;
+  save();
+
+  if (key === "link") {
+    const img = wrap.children[index].querySelector(".qr img");
+    img.src = value
+      ? "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(value)
+      : "";
+  }
+}
+
+function copyText(btn) {
+  const input = btn.previousElementSibling;
+  navigator.clipboard.writeText(input.value);
+  btn.textContent = "✓";
+  setTimeout(() => btn.textContent = "📋", 1000);
+}
+
+function render() {
+  wrap.innerHTML = "";
+  data.forEach((_, i) => createProject(i));
+}
+
+render();
+
+addBtn.onclick = () => {
+  if (data.length >= max) return;
+  data.push({});
+  save();
+  render();
+};
+</script>
 
 </body>
 </html>
+
