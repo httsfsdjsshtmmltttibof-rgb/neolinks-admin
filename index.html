@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeoLink Projects</title>
+
+<style>
+:root{
+  --bg:#071a28;
+  --header:#0b2f44;
+  --card:#ffffff;
+  --table:#f4f7fa;
+  --accent:#f5c400;
+  --text:#0e1e2a;
+}
+
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+}
+
+.container{
+  max-width:760px;
+  margin:auto;
+  padding:20px;
+}
+
+/* HEADER */
+.header{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:var(--header);
+  color:#fff;
+  padding:16px;
+  border-radius:18px;
+}
+
+.header img{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  object-fit:cover;
+  border:3px solid var(--accent);
+}
+
+.header h1{
+  font-size:24px;
+  margin:0;
+}
+
+/* PROJECT */
+.project{
+  margin-top:16px;
+  border-radius:16px;
+  overflow:hidden;
+  background:var(--card);
+}
+
+.project-header{
+  padding:14px 16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+  background:#10293d;
+  color:#fff;
+}
+
+.arrow{
+  transition:.3s;
+}
+
+.project.open .arrow{
+  transform:rotate(180deg);
+}
+
+/* DETAILS */
+.details{
+  display:none;
+  background:var(--table);
+  padding:16px;
+}
+
+.project.open .details{
+  display:block;
+}
+
+.row{
+  display:grid;
+  grid-template-columns:90px 1fr auto;
+  gap:8px;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.row label{
+  font-weight:600;
+}
+
+.row input{
+  padding:8px 10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  width:100%;
+}
+
+.copy{
+  background:var(--accent);
+  border:none;
+  border-radius:6px;
+  padding:6px 8px;
+  cursor:pointer;
+}
+
+.qr{
+  text-align:center;
+  margin-top:10px;
+}
+
+.qr img{
+  width:140px;
+}
+
+/* PLUS */
+.add{
+  margin:20px auto;
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  background:var(--accent);
+  color:#000;
+  font-size:28px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+  <div class="header">
+    <img src="https://i.postimg.cc/McTM88wk/photo-2025-11-25-13-40-00.jpg">
+    <h1>NeoLink Projects</h1>
+  </div>
+
+  <div id="projects"></div>
+  <div id="addBtn" class="add">+</div>
+
+</div>
+
+<script>
+let max=40;
+let count=7;
+const wrap=document.getElementById("projects");
+const addBtn=document.getElementById("addBtn");
+
+function createProject(i){
+  const div=document.createElement("div");
+  div.className="project";
+  div.innerHTML=`
+    <div class="project-header">
+      <span>Project</span>
+      <span class="arrow">▼</span>
+    </div>
+    <div class="details">
+      ${row("Name")}
+      ${row("Nomer", i, true)}
+      ${row("Narxi")}
+      ${row("Sana")}
+      ${row("Silka","",false,true)}
+      ${row("Github","",false,true)}
+      <div class="qr"><img></div>
+    </div>`;
+  wrap.appendChild(div);
+
+  div.querySelector(".project-header").onclick=()=>{
+    div.classList.toggle("open");
+  };
+
+  const inputs=div.querySelectorAll("input");
+  const qr=div.querySelector(".qr img");
+
+  inputs.forEach(inp=>{
+    inp.oninput=()=>{
+      if(inp.previousElementSibling.textContent.includes("Silka")){
+        qr.src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent(inp.value);
+      }
+    }
+  });
+
+  div.querySelectorAll(".copy").forEach(btn=>{
+    btn.onclick=()=>{
+      navigator.clipboard.writeText(btn.previousElementSibling.value);
+      btn.textContent="✓";
+      setTimeout(()=>btn.textContent="📋",1000);
+    }
+  });
+}
+
+function row(label,val="",ro=false,copy=false){
+  return `
+  <div class="row">
+    <label>${label}:</label>
+    <input ${ro?"readonly":""} value="${val}">
+    ${copy?'<button class="copy">📋</button>':""}
+  </div>`;
+}
+
+// INIT
+for(let i=1;i<=count;i++) createProject(i);
+
+// PLUS
+addBtn.onclick=()=>{
+  if(count>=max) return;
+  count++;
+  createProject(count);
+};
+</script>
+
+</body>
+</html>
